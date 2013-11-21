@@ -202,12 +202,12 @@ describe("put(x).in(y, name).end(fn)", function(){
         var rel = relation(users, posts)
         .put(post).in(user, 'posts')
         .end(function(err){
-          top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+          top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
             assert(null == err);
             assert(time < value);
-            top.get('/users/relations/posts/1/timeline/' + value, function(err, value){
+            top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00timeline/\x01' + value, function(err, value){
               assert(null == err);
-              assert('/posts/2' == value);
+              assert('\x00/\x00posts/\x012' == value);
               top.get(value, { valueEncoding: 'json' }, function(err, data){
                 data.should.eql(post);
                 done();
@@ -241,12 +241,12 @@ describe("put(x).in(y, name).end(fn)", function(){
         var rel = relation(users, posts)
         .put(post).in(user, 'posts')
         .end(function(err){
-          top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+          top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
             assert(null == err);
             assert(time < value);
-            top.get('/users/relations/posts/1/timeline/' + value, function(err, value){
+            top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00timeline/\x01' + value, function(err, value){
               assert(null == err);
-              assert('/posts/2' == value);
+              assert('\x00/\x00posts/\x012' == value);
               top.get(value, { valueEncoding: 'json' }, function(err, data){
                 data.should.eql(post);
                 var rel = relation(users, posts)
@@ -292,21 +292,21 @@ describe("put(x).in(y, name).and(y).in(x, name).end(fn)", function(){
         .and(user).in(post, 'owner')
         .end(function(err){
 
-          top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+          top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
             assert(null == err);
             assert(time < value);
-            top.get('/users/relations/posts/1/timeline/' + value, function(err, value){
+            top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00timeline/\x01' + value, function(err, value){
               assert(null == err);
-              assert('/posts/2' == value);
+              assert('\x00/\x00posts/\x012' == value);
               top.get(value, { valueEncoding: 'json' }, function(err, data){
                 data.should.eql(post);
 
-                top.get('/posts/relations/owner/2/pointers//users/1', function(err, value){
+                top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00pointers/\x01\x00/\x00users/\x011', function(err, value){
                   assert(null == err);
                   assert(time < value);
-                  top.get('/posts/relations/owner/2/timeline/' + value, function(err, value){
+                  top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00timeline/\x01' + value, function(err, value){
                     assert(null == err);
-                    assert('/users/1' == value);
+                    assert('\x00/\x00users/\x011' == value);
                     top.get(value, { valueEncoding: 'json' }, function(err, data){
                       data.should.eql(user);
                       done();
@@ -346,21 +346,21 @@ describe("put(x).in(y, name).and(y).in(x, name).end(fn)", function(){
         .and(user).in(post, 'owner')
         .end(function(err){
 
-          top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+          top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
             assert(null == err);
             assert(time < value);
-            top.get('/users/relations/posts/1/timeline/' + value, function(err, value){
+            top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00timeline/\x01' + value, function(err, value){
               assert(null == err);
-              assert('/posts/2' == value);
+              assert('\x00/\x00posts/\x012' == value);
               top.get(value, { valueEncoding: 'json' }, function(err, data){
                 data.should.eql(post);
 
-                top.get('/posts/relations/owner/2/pointers//users/1', function(err, value){
+                top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00pointers/\x01\x00/\x00users/\x011', function(err, value){
                   assert(null == err);
                   assert(time < value);
-                  top.get('/posts/relations/owner/2/timeline/' + value, function(err, value){
+                  top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00timeline/\x01' + value, function(err, value){
                     assert(null == err);
-                    assert('/users/1' == value);
+                    assert('\x00/\x00users/\x011' == value);
                     top.get(value, { valueEncoding: 'json' }, function(err, data){
                       data.should.eql(user);
 
@@ -410,19 +410,19 @@ describe("del(x).from(y, name).end(fn)", function(){
         var rel = relation(users, posts)
         .put(post).in(user, 'posts')
         .end(function(err){
-          top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+          top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
             assert(null == err);
             assert(time < value);
-            top.get('/users/relations/posts/1/timeline/' + value, function(err, value){
+            top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00timeline/\x01' + value, function(err, value){
               assert(null == err);
-              assert('/posts/2' == value);
+              assert('\x00/\x00posts/\x012' == value);
               top.get(value, { valueEncoding: 'json' }, function(err, data){
                 data.should.eql(post);
 
                 var rel = relation(users, posts)
                 .del(post).from(user, 'posts')
                 .end(function(err){
-                  top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+                  top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
                     assert(err);
                     assert('NotFoundError' == err.type);
                     assert(null == value);
@@ -466,21 +466,21 @@ describe("del(x).from(y, name).and(y).from(x, name).end(fn)", function(){
         .and(user).in(post, 'owner')
         .end(function(err){
 
-          top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+          top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
             assert(null == err);
             assert(time < value);
-            top.get('/users/relations/posts/1/timeline/' + value, function(err, value){
+            top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00timeline/\x01' + value, function(err, value){
               assert(null == err);
-              assert('/posts/2' == value);
+              assert('\x00/\x00posts/\x012' == value);
               top.get(value, { valueEncoding: 'json' }, function(err, data){
                 data.should.eql(post);
 
-                top.get('/posts/relations/owner/2/pointers//users/1', function(err, value){
+                top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00pointers/\x01\x00/\x00users/\x011', function(err, value){
                   assert(null == err);
                   assert(time < value);
-                  top.get('/posts/relations/owner/2/timeline/' + value, function(err, value){
+                  top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00timeline/\x01' + value, function(err, value){
                     assert(null == err);
-                    assert('/users/1' == value);
+                    assert('\x00/\x00users/\x011' == value);
                     top.get(value, { valueEncoding: 'json' }, function(err, data){
                       data.should.eql(user);
 
@@ -488,11 +488,11 @@ describe("del(x).from(y, name).and(y).from(x, name).end(fn)", function(){
                       .del(post).from(user, 'posts')
                       .and(user).from(post, 'owner')
                       .end(function(err){
-                        top.get('/users/relations/posts/1/pointers//posts/2', function(err, value){
+                        top.get('\x00/\x00users/\x00relations/\x00posts/\x001/\x00pointers/\x01\x00/\x00posts/\x012', function(err, value){
                           assert(err);
                           assert('NotFoundError' == err.type);
                           assert(null == value);
-                          top.get('/posts/relations/owner/2/pointers//users/1', function(err, value){
+                          top.get('\x00/\x00posts/\x00relations/\x00owner/\x002/\x00pointers/\x01\x00/\x00users/\x011', function(err, value){
                             assert(err);
                             assert('NotFoundError' == err.type);
                             assert(null == value);
@@ -663,8 +663,8 @@ describe("name.by(x)", function(){
             stream.on('end', function(){
               assert(2 == results.length);
               results.should.eql([
-                '/posts/2',
-                '/posts/3'
+                '\x00/\x00posts/\x012',
+                '\x00/\x00posts/\x013'
               ]);
               done();
             });
@@ -704,8 +704,8 @@ describe("name.by(x)", function(){
             });
             stream.on('end', function(){
               assert(2 == results.length);
-              results.should.include('/posts/2');
-              results.should.include('/posts/3');
+              results.should.include('\x00/\x00posts/\x012');
+              results.should.include('\x00/\x00posts/\x013');
               done();
             });
           });
