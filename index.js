@@ -13,8 +13,9 @@
  * Module dependencies.
  */
 
-var through = require('async-through');
+var through = require('through');
 var ordered = require('ordered-through');
+var asyncThrough = require('async-through');
 var timestamp = require('monotonic-timestamp');
 
 /**
@@ -118,6 +119,21 @@ Relation.prototype.end = function(fn){
 };
 
 /**
+ * Creates a resolver method.
+ *
+ * @param {String} name
+ * @param {Sub} [b]
+ * @return {Object} this
+ * @api public
+ */
+
+Relation.prototype.have = function(name, b){
+  this.b = this.b || b;
+  this.a[name] = this.a[name] || resolver(this.a, this.b, name);
+  return this;
+};
+
+/**
  * Creates sublevels for relation `name`
  * between dbs `a` and `b` for item `key`.
  *
@@ -143,8 +159,6 @@ function relations(a, b, name, key){
     pointers: pointers,
     timeline: timeline
   };
-
-  a[name] = a[name] || resolver(rel, b);
 
   return rel;
 }
@@ -199,15 +213,16 @@ function del(rel, key, fn){
 }
 
 /**
- * Resolver factory for `rel` and `other`.
+ * Resolver factory for `a` and `b`.
  *
- * @param {Object} rel
- * @param {Sub} other
+ * @param {Sub} a
+ * @param {Sub} b
+ * @param {String} name
  * @return {Object}
  * @api private
  */
 
-function resolver(rel, other){
+function resolver(a, b, name){
   return {
     by: by
   };
@@ -225,31 +240,41 @@ function resolver(rel, other){
    */
 
   function by(item, options){
-    options = options || {};
-    if (!('ordered' in options)) options.ordered = true;
+    var out = through(function(data){
+      this.queue(data);
+    });
 
-    if (options.ordered && !options.keys) {
-      var resolve = ordered(function(key, fn){
-        other.db.get(key, { valueEncoding: 'json' }, fn);
-      });
-      return rel.timeline.createValueStream().pipe(resolve);
-    }
-    else if (!options.ordered && !options.keys) {
-      var resolve = through(function(key){
-        var self = this;
-        other.db.get(key, { valueEncoding: 'json' }, function(err, data){
-          if (err) return self.emit('error', err);
-          self.queue(data);
+    a.find(item, function(err, data, key){
+      var rel = relations(a, b, name, key);
+
+      options = options || {};
+      if (!('ordered' in options)) options.ordered = true;
+
+      if (options.ordered && !options.keys) {
+        var resolve = ordered(function(key, fn){
+          b.db.get(key, { valueEncoding: 'json' }, fn);
         });
-      });
-      return rel.pointers.createKeyStream().pipe(resolve);
-    }
-    else if (options.ordered && options.keys) {
-      return rel.timeline.createValueStream();
-    }
-    else if (!options.ordered && options.keys) {
-      return rel.pointers.createKeyStream();
-    }
+        return rel.timeline.createValueStream().pipe(resolve).pipe(out);
+      }
+      else if (!options.ordered && !options.keys) {
+        var resolve = asyncThrough(function(key){
+          var self = this;
+          b.db.get(key, { valueEncoding: 'json' }, function(err, data){
+            if (err) return self.emit('error', err);
+            self.queue(data);
+          });
+        });
+        return rel.pointers.createKeyStream().pipe(resolve).pipe(out);
+      }
+      else if (options.ordered && options.keys) {
+        return rel.timeline.createValueStream().pipe(out);
+      }
+      else if (!options.ordered && options.keys) {
+        return rel.pointers.createKeyStream().pipe(out);
+      }
+    });
+
+    return out;
   }
 }
 
@@ -270,9 +295,11 @@ function exec(task, a, b, src, dest, fn){
   var item = dest.item;
   var other = src.item;
 
-  a.find(item, function(err, data, key){
-    var rel = relations(a, b, name, key);
+  a[name] = a[name] || resolver(a, b, name);
 
+  a.find(item, function(err, data, key){
+    if (err) return fn(err);
+    var rel = relations(a, b, name, key);
     b.find(other, function(err, data, key){
       if (err) return fn(err);
       key = b.prefix(key);

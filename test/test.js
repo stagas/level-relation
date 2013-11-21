@@ -41,6 +41,47 @@ describe("relation(a, b)", function(){
 
 })
 
+describe("relation(a).have(name, b)", function(){
+
+  it("should return an instance of Relation", function(){
+    var users = db.sublevel('users');
+    var posts = db.sublevel('posts');
+
+    indexing(users);
+    indexing(posts);
+
+    var rel = relation(users).have('posts', posts);
+    rel.should.be.an.instanceof(relation);
+  })
+
+  it("should have relation stream factory property", function(){
+    var users = db.sublevel('users');
+    var posts = db.sublevel('posts');
+
+    indexing(users);
+    indexing(posts);
+
+    var rel = relation(users).have('posts', posts);
+    users.should.have.property('posts');
+  })
+
+})
+
+describe("relation(a, b).have(name)", function(){
+
+  it("should have relation stream factory property", function(){
+    var users = db.sublevel('users');
+    var posts = db.sublevel('posts');
+
+    indexing(users);
+    indexing(posts);
+
+    var rel = relation(users, posts).have('posts');
+    users.should.have.property('posts');
+  })
+
+})
+
 describe("put(x).in(y, name)", function(){
 
   it("should create a batch job", function(done){
@@ -581,6 +622,57 @@ describe("name.by(x)", function(){
             });
           });
 
+        });
+      });
+    });
+  })
+
+  it("each item should have its own relations", function(done){
+    var users = db.sublevel('users');
+    var posts = db.sublevel('posts');
+
+    indexing(users);
+    indexing(posts);
+
+    users.index('username');
+    posts.index('title');
+
+    var user = { username: 'john' };
+    var user2 = { username: 'mary' };
+    var post = { title: 'foobar' };
+    var post2 = { title: 'barfoo' };
+
+    users.put(1, user, function(err){
+      users.put(2, user2, function(err){
+        posts.put(3, post, function(err){
+          posts.put(4, post2, function(err){
+
+            relation(users, posts)
+            .put(post).in(user, 'posts')
+            .put(post2).in(user2, 'posts')
+            .end(function(err){
+              var results_1 = [];
+              var results_2 = [];
+              var stream = users.posts.by(user);
+              stream.on('data', function(data){
+                results_1.push(data);
+              });
+              stream.on('end', function(){
+                assert(1 == results_1.length);
+                results_1[0].should.eql(post);
+                var stream = users.posts.by(user2);
+                stream.on('data', function(data){
+                  results_2.push(data);
+                });
+                stream.on('end', function(){
+                  assert(1 == results_2.length);
+                  results_2[0].should.eql(post2);
+                  done();
+                });
+              });
+            });
+
+          });
         });
       });
     });

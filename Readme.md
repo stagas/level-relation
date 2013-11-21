@@ -59,6 +59,18 @@ users.put(1, user, function(err){
 
 Create a relation job.
 
+### relation(a).have(name, b)
+
+Creates a stream factory for `a` for relations `name` with `b`.
+
+This is also added implicitly when a new relation is created.
+
+Example:
+```js
+relation(users).have('posts', posts);
+var p = users.posts.by(user);
+```
+
 ### put(x).in(y, name)
 
 Puts `x` in `y` relations of `name`.
