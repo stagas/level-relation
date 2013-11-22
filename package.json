@@ -8,6 +8,7 @@
   "license": "MIT",
   "main": "index.js",
   "dependencies": {
+    "through": "~2.3.4",
     "async-through": "~0.2.2",
     "ordered-through": "~0.0.3",
     "monotonic-timestamp": "~0.0.8"
