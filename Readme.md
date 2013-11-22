@@ -59,15 +59,15 @@ users.put(1, user, function(err){
 
 Create a relation job.
 
-### relation(a).have(name, b)
+### relation(db).have(name)
 
-Creates a stream factory for `a` for relations `name` with `b`.
+Creates a stream factory for `db` for relations `name` with `b`.
 
 This is also added implicitly when a new relation is created.
 
 Example:
 ```js
-relation(users).have('posts', posts);
+relation(users).have('posts');
 var p = users.posts.by(user);
 ```
 

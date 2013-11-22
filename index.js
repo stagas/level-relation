@@ -127,26 +127,24 @@ Relation.prototype.end = function(fn){
  * @api public
  */
 
-Relation.prototype.have = function(name, b){
-  this.b = this.b || b;
-  this.a[name] = this.a[name] || resolver(this.a, this.b, name);
+Relation.prototype.have = function(name){
+  this.a[name] = this.a[name] || resolver(this.a, name);
   return this;
 };
 
 /**
- * Creates sublevels for relation `name`
- * between dbs `a` and `b` for item `key`.
+ * Creates relation `name` sublevels
+ * in db `sub` for item `key`.
  *
- * @param {Sub} a
- * @param {Sub} b
+ * @param {Sub} sub
  * @param {String} name
  * @param {String} key
  * @return {Object}
  * @api private
  */
 
-function relations(a, b, name, key){
-  var db = a
+function relations(sub, name, key){
+  var db = sub
   .sublevel('relations', { valueEncoding: 'utf8' })
   .sublevel(name)
   .sublevel(key);
@@ -213,16 +211,15 @@ function del(rel, key, fn){
 }
 
 /**
- * Resolver factory for `a` and `b`.
+ * Resolver factory for `sub`.
  *
- * @param {Sub} a
- * @param {Sub} b
+ * @param {Sub} sub
  * @param {String} name
  * @return {Object}
  * @api private
  */
 
-function resolver(a, b, name){
+function resolver(sub, name){
   return {
     by: by
   };
@@ -244,22 +241,22 @@ function resolver(a, b, name){
       this.queue(data);
     });
 
-    a.find(item, function(err, data, key){
-      var rel = relations(a, b, name, key);
+    sub.find(item, function(err, data, key){
+      var rel = relations(sub, name, key);
 
       options = options || {};
       if (!('ordered' in options)) options.ordered = true;
 
       if (options.ordered && !options.keys) {
         var resolve = ordered(function(key, fn){
-          b.db.get(key, { valueEncoding: 'json' }, fn);
+          sub.db.get(key, { valueEncoding: 'json' }, fn);
         });
         return rel.timeline.createValueStream().pipe(resolve).pipe(out);
       }
       else if (!options.ordered && !options.keys) {
         var resolve = asyncThrough(function(key){
           var self = this;
-          b.db.get(key, { valueEncoding: 'json' }, function(err, data){
+          sub.db.get(key, { valueEncoding: 'json' }, function(err, data){
             if (err) return self.emit('error', err);
             self.queue(data);
           });
@@ -295,11 +292,11 @@ function exec(task, a, b, src, dest, fn){
   var item = dest.item;
   var other = src.item;
 
-  a[name] = a[name] || resolver(a, b, name);
+  a[name] = a[name] || resolver(a, name);
 
   a.find(item, function(err, data, key){
     if (err) return fn(err);
-    var rel = relations(a, b, name, key);
+    var rel = relations(a, name, key);
     b.find(other, function(err, data, key){
       if (err) return fn(err);
       key = b.prefix(key);

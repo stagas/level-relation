@@ -41,43 +41,71 @@ describe("relation(a, b)", function(){
 
 })
 
-describe("relation(a).have(name, b)", function(){
+describe("relation(db).have(name)", function(){
 
   it("should return an instance of Relation", function(){
     var users = db.sublevel('users');
-    var posts = db.sublevel('posts');
 
     indexing(users);
-    indexing(posts);
 
-    var rel = relation(users).have('posts', posts);
+    var rel = relation(users).have('posts');
     rel.should.be.an.instanceof(relation);
   })
 
   it("should have relation stream factory property", function(){
     var users = db.sublevel('users');
-    var posts = db.sublevel('posts');
 
     indexing(users);
-    indexing(posts);
 
-    var rel = relation(users).have('posts', posts);
+    relation(users).have('posts');
     users.should.have.property('posts');
   })
 
-})
-
-describe("relation(a, b).have(name)", function(){
-
-  it("should have relation stream factory property", function(){
+  it("should stream foreign objects", function(done){
     var users = db.sublevel('users');
     var posts = db.sublevel('posts');
+    var comments = db.sublevel('comments');
 
     indexing(users);
     indexing(posts);
+    indexing(comments);
 
-    var rel = relation(users, posts).have('posts');
-    users.should.have.property('posts');
+    users.index('username');
+    posts.index('title');
+    comments.index('date');
+
+    relation(users).have('items');
+
+    var user = { username: 'john' };
+    var post = { title: 'foobar' };
+    var comment = { date: Date.now() };
+
+    users.put(1, user, function(err){
+      posts.put(2, post, function(err){
+        comments.put(3, comment, function(err){
+          relation(users, posts)
+          .put(post).in(user, 'items')
+          .end(function(err){
+            relation(users, comments)
+            .put(comment).in(user, 'items')
+            .end(function(err){
+              var results = [];
+              var i = users.items.by(user);
+              i.on('data', function(data){
+                results.push(data);
+              });
+              i.on('end', function(){
+                results.should.eql([
+                  post,
+                  comment
+                ]);
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
   })
 
 })
