@@ -1,6 +1,6 @@
 {
   "name": "level-relation",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "https://github.com/stagas/level-relation",
   "description": "relations and joins between sublevels",
   "keywords": ["level", "levelup", "sublevel", "relations", "join"],
